@@ -7,7 +7,7 @@ interface HeaderProps {
   currentPage: string;
 }
 
-// NOTE: Using the standard public path reference for the web (assuming D:\...logo.png is moved to your public folder)
+// NOTE: Using the standard public path reference. This assumes 'logo.png' is in your 'public/' folder.
 const LOGO_SRC = '/logo.png'; 
 
 export default function Header({ onNavigate, currentPage }: HeaderProps) {
@@ -47,7 +47,7 @@ export default function Header({ onNavigate, currentPage }: HeaderProps) {
           onClick={() => onNavigate('home')}
         >
           
-          {/* 🔴 LOGO IMPLEMENTATION (Ensure logo.png is accessible via the / path) */}
+          {/* LOGO IMPLEMENTATION */}
           <img
             src={LOGO_SRC} 
             alt="Calcutta d'Rasoi Logo"
