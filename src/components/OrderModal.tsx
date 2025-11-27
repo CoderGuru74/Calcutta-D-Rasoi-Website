@@ -3,7 +3,7 @@ import { X, ShoppingCart } from 'lucide-react';
 import { MenuItem } from '../data/menuData';
 import { useMode } from '../context/ModeContext';
 import { supabase } from '../lib/supabase';
-import emailjs from '@emailjs/browser'; // 🚨 EmailJS Import
+import emailjs from '@emailjs/browser'; 
 
 interface OrderModalProps {
   item: MenuItem;
@@ -14,7 +14,7 @@ interface OrderModalProps {
 const EMAILJS_SERVICE_ID = 'service_1yaqp9d'; // e.g., 'service_1yaqp9d'
 const EMAILJS_ORDER_TEMPLATE_ID = 'template_ynscgvh'; // e.g., 'template_order_notification'
 const EMAILJS_PUBLIC_KEY = 'dj9-PXBKkF17KAJHb'; // e.g., 'dj9-PXBKkF17KAJHb'
-const RECIPIENT_EMAIL = 'calcutta.d.rasoicafe@gmail.com'; 
+const RECIPIENT_EMAIL = 'calcutta.d.rasoicafe@gmail.com';
 
 // Initialize EmailJS (Ensure this is done once in your app, e.g., main.tsx)
 if (typeof window !== 'undefined' && EMAILJS_PUBLIC_KEY) {
@@ -68,14 +68,14 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
       const templateParams = {
           to_email: RECIPIENT_EMAIL, 
           
-          // Map data to template variables (must match your EmailJS template placeholders)
+          // Map data to template variables
           item_name: orderData.item_name,
           quantity: orderData.quantity,
           total_amount: orderData.total_amount,
           customer_name: orderData.customer_name,
           customer_phone: orderData.customer_phone,
           delivery_address: orderData.delivery_address,
-          payment_method: 'Cash on Delivery (COD)', // Static field for template
+          payment_method: 'Cash on Delivery (COD)',
           
           reply_to: orderData.customer_email || 'no-reply@calcutta-rasoi.com' 
       };
@@ -126,11 +126,8 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
 
         <div className="p-6">
           <div className="flex gap-6 mb-6">
-            <img
-              src={item.image}
-              alt={item.name}
-              className="w-32 h-32 object-cover rounded-2xl shadow-lg"
-            />
+            
+            {/* 🔴 CRITICAL FIX: REMOVED FOOD IMAGE HERE */}
             <div className="flex-1">
               <h3 className="text-2xl font-bold mb-2">{item.name}</h3>
               <p className="text-gray-600 mb-3">{item.description}</p>
@@ -141,6 +138,7 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* ... (rest of the form remains the same) ... */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Quantity
