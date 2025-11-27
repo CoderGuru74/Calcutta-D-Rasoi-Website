@@ -3,11 +3,24 @@ import { X, ShoppingCart } from 'lucide-react';
 import { MenuItem } from '../data/menuData';
 import { useMode } from '../context/ModeContext';
 import { supabase } from '../lib/supabase';
+import emailjs from '@emailjs/browser'; // 🚨 EmailJS Import
 
 interface OrderModalProps {
   item: MenuItem;
   onClose: () => void;
 }
+
+// 🚨🚨 EMAILJS CONFIGURATION (You must update these IDs) 🚨🚨
+const EMAILJS_SERVICE_ID = 'service_1yaqp9d'; // e.g., 'service_1yaqp9d'
+const EMAILJS_ORDER_TEMPLATE_ID = 'template_ynscgvh'; // e.g., 'template_order_notification'
+const EMAILJS_PUBLIC_KEY = 'dj9-PXBKkF17KAJHb'; // e.g., 'dj9-PXBKkF17KAJHb'
+const RECIPIENT_EMAIL = 'calcutta.d.rasoicafe@gmail.com'; 
+
+// Initialize EmailJS (Ensure this is done once in your app, e.g., main.tsx)
+if (typeof window !== 'undefined' && EMAILJS_PUBLIC_KEY) {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+}
+// 🚨🚨 END CONFIGURATION 🚨🚨
 
 export default function OrderModal({ item, onClose }: OrderModalProps) {
   const { mode, accentColor } = useMode();
@@ -19,6 +32,11 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
   const [submitMessage, setSubmitMessage] = useState('');
 
   const totalAmount = item.price * quantity;
+  
+  // Dynamic focus ring colors (Tailwind CSS Fix)
+  const focusRingClasses = mode === 'restaurant' 
+    ? 'focus:ring-[#005051] focus:border-[#005051]'
+    : 'focus:ring-[#FCD12A] focus:border-[#FCD12A]'; 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +44,7 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
     setSubmitMessage('');
 
     try {
+      // 1. Prepare data payload
       const orderData = {
         mode,
         item_name: item.name,
@@ -38,34 +57,45 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
         status: 'pending',
       };
 
+      // 2. Save data to Supabase (Database record keeping)
       const { error: dbError } = await supabase
         .from('orders')
         .insert([orderData]);
 
       if (dbError) throw dbError;
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      // 3. Send Email Notification via EmailJS (Instant alert)
+      const templateParams = {
+          to_email: RECIPIENT_EMAIL, 
+          
+          // Map data to template variables (must match your EmailJS template placeholders)
+          item_name: orderData.item_name,
+          quantity: orderData.quantity,
+          total_amount: orderData.total_amount,
+          customer_name: orderData.customer_name,
+          customer_phone: orderData.customer_phone,
+          delivery_address: orderData.delivery_address,
+          payment_method: 'Cash on Delivery (COD)', // Static field for template
+          
+          reply_to: orderData.customer_email || 'no-reply@calcutta-rasoi.com' 
+      };
 
-      await fetch(`${supabaseUrl}/functions/v1/send-email-notification`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-        },
-        body: JSON.stringify({
-          type: 'order',
-          data: orderData,
-        }),
-      });
-
+      await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_ORDER_TEMPLATE_ID,
+          templateParams,
+          EMAILJS_PUBLIC_KEY
+      );
+      
+      // 4. Success
       setSubmitMessage('Order placed successfully! We will contact you soon.');
       setTimeout(() => {
         onClose();
       }, 2000);
+
     } catch (error) {
-      console.error('Error placing order:', error);
-      setSubmitMessage('Failed to place order. Please try again.');
+      console.error('Error placing order or sending email:', error);
+      setSubmitMessage('Failed to place order. Please check network and EmailJS setup.');
     } finally {
       setIsSubmitting(false);
     }
@@ -148,8 +178,7 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
                 required
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 transition-all duration-300"
-                style={{ focusRing: accentColor }}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-300 ${focusRingClasses}`}
                 placeholder="Enter your name"
               />
             </div>
@@ -163,7 +192,7 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
                 required
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 transition-all duration-300"
+                className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-300 ${focusRingClasses}`}
                 placeholder="Enter your phone number"
               />
             </div>
@@ -177,7 +206,7 @@ export default function OrderModal({ item, onClose }: OrderModalProps) {
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 transition-all duration-300"
+                className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-300 ${focusRingClasses}`}
                 placeholder="Enter your complete delivery address"
               />
             </div>
