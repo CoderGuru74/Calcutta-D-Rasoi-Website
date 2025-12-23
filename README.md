@@ -21,7 +21,6 @@ This project is suitable for real-world deployment and frontend portfolio use.
 - 🎨 Tailwind CSS for modern and consistent styling
 - ⚡ Vite for fast development and optimized builds
 - 📱 Fully responsive layout
-- 🖼️ Optimized asset handling via `public/`
 - 🧩 Clean and modular project structure
 
 ---
